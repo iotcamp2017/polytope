@@ -1,144 +1,122 @@
 <head>
- <title>
-  Light Sensor Demo
- </title>
+    <title>
+        Light Sensor Demo
+    </title>
 </head>
+
 <body>
     <p id="Action">Connecting...</p>
     <canvas id="can" width="400" height="320" />
     <script>
-     
-     var mytext = document.getElementById('Action');
-        
-     window.setInterval(updateCube, 50);
-     
+        var mytext = document.getElementById('Action');
+
+        window.setInterval(updateCube, 50);
+
         function updateCube() {
-        var request = new XMLHttpRequest();
-        request.onreadystatechange = function() {
-        if (request.readyState == 4 && request.status == 200) {
-          var myArr = JSON.parse(request.responseText);
-            if(myArr.connectionStatus == 0)
-                {
-                    mytext.innerHTML = "Connecting...";
-                }
-            else if(myArr.connectionStatus == 1)
-                {
-                    mytext.innerHTML = "Linking...";
-                }
-            else if(myArr.lightLevel == 1)
-                {
-                    mytext.innerHTML = "Coffee break";
-                }
-            else if(myArr.lightLevel == 2)
-                {
-                    mytext.innerHTML = "Work";
-                }
-            else if(myArr.lightLevel == 3)
-                {
-                    mytext.innerHTML = "Dinner";
-                }
-            else if(myArr.lightLevel == 4)
-                {
-                    mytext.innerHTML = "Travel";
-                }
-            else if(myArr.lightLevel == 5)
-                {
-                    mytext.innerHTML = "Sleep";
-                }
-            else if(myArr.lightLevel == 6)
-                {
-                    mytext.innerHTML = "Shower";
-                }
-            else if(myArr.connectionStatus == 2)
-                {
-                    mytext.innerHTML = "Connected";
-                }
-            
-            var canvas = document.getElementById("can");
-            var ctx = canvas.getContext("2d");
-            var lastend = 0;
-            //var data = [myArr.a1time, myArr.a2time, myArr.a3time, myArr.a4time, myArr.a5time, myArr.a6time]; // If you add more data values mak
-            var data = ["Coffee," + myArr.a1time/2000, "Leisure," + myArr.a2time/2000, "Mail," + myArr.a3time/2000, "Mandatory," + myArr.a4time/2000, "Delivery," + myArr.a5time/2000, "Planning," + myArr.a6time/2000]; // If you add more data values mak
-            var myTotal = 0; // Automatically calculated so don't touch
-            var myColor = ['red', 'green', 'blue', 'white', 'black', 'yellow']; // Colors of each slice
-            ctx.clearRect(0,0,canvas.width, canvas.height);
-            drawBarChart(ctx, data, 0, 60, (canvas.height - 20), 30, myArr.lightLevel);
-            
+            var request = new XMLHttpRequest();
+            request.onreadystatechange = function() {
+                if (request.readyState == 4 && request.status == 200) {
+                    var myArr = JSON.parse(request.responseText);
+                    if (myArr.connectionStatus == 0) {
+                        mytext.innerHTML = "Connecting...";
+                    } else if (myArr.connectionStatus == 1) {
+                        mytext.innerHTML = "Linking...";
+                    } else if (myArr.lightLevel == 1) {
+                        mytext.innerHTML = "Coffee break";
+                    } else if (myArr.lightLevel == 2) {
+                        mytext.innerHTML = "Work";
+                    } else if (myArr.lightLevel == 3) {
+                        mytext.innerHTML = "Dinner";
+                    } else if (myArr.lightLevel == 4) {
+                        mytext.innerHTML = "Travel";
+                    } else if (myArr.lightLevel == 5) {
+                        mytext.innerHTML = "Sleep";
+                    } else if (myArr.lightLevel == 6) {
+                        mytext.innerHTML = "Shower";
+                    } else if (myArr.connectionStatus == 2) {
+                        mytext.innerHTML = "Connected";
+                    }
 
-            
-            function drawBarChart(context, data, startX, barWidth, chartHeight, markDataIncrementsIn, face) {
-          // Draw the x and y axes
-          context.lineWidth = "1.0";
-          var startY = 380;
-            var mode = 0;
-          drawLine(context, startX, startY, startX, 30); 
-          drawLine(context, startX, startY, 570, startY);			
-          context.lineWidth = "0.0";
-          var maxValue = 0;
-          for (var i=0; i < data.length; i++) {
-            // Extract the data
-            var values = data[i].split(",");
-            var name = values[0];
-            var height = parseInt(values[1]);
-            if (parseInt(height) > parseInt(maxValue)) maxValue = height;
+                    var canvas = document.getElementById("can");
+                    var ctx = canvas.getContext("2d");
+                    var lastend = 0;
+                    //var data = [myArr.a1time, myArr.a2time, myArr.a3time, myArr.a4time, myArr.a5time, myArr.a6time]; // If you add more data values mak
+                    var data = ["Coffee," + myArr.a1time / 2000, "Leisure," + myArr.a2time / 2000, "Mail," + myArr.a3time / 2000, "Mandatory," + myArr.a4time / 2000, "Delivery," + myArr.a5time / 2000, "Planning," + myArr.a6time / 2000]; // If you add more data values mak
+                    var myTotal = 0; // Automatically calculated so don't touch
+                    var myColor = ['red', 'green', 'blue', 'white', 'black', 'yellow']; // Colors of each slice
+                    ctx.clearRect(0, 0, canvas.width, canvas.height);
+                    drawBarChart(ctx, data, 0, 60, (canvas.height - 20), 30, myArr.lightLevel);
 
-            // Write the data to the chart
-            if(mode == 0)
-                {
-                context.fillStyle = "#003c71";
-                mode = 1;
+
+
+                    function drawBarChart(context, data, startX, barWidth, chartHeight, markDataIncrementsIn, face) {
+                        // Draw the x and y axes
+                        context.lineWidth = "1.0";
+                        var startY = 380;
+                        var mode = 0;
+                        drawLine(context, startX, startY, startX, 30);
+                        drawLine(context, startX, startY, 570, startY);
+                        context.lineWidth = "0.0";
+                        var maxValue = 0;
+                        for (var i = 0; i < data.length; i++) {
+                            // Extract the data
+                            var values = data[i].split(",");
+                            var name = values[0];
+                            var height = parseInt(values[1]);
+                            if (parseInt(height) > parseInt(maxValue)) maxValue = height;
+
+                            // Write the data to the chart
+                            if (mode == 0) {
+                                context.fillStyle = "#003c71";
+                                mode = 1;
+                            } else {
+                                context.fillStyle = "#00aeef";
+                                mode = 0;
+                            }
+
+                            drawRectangle(context, startX + (i * barWidth) + i, (chartHeight - height), barWidth, height, true);
+
+                            // Add the column title to the x-axis
+                            if (face - 1 != i)
+                                context.font = "8pt Calibri";
+                            else
+                                context.font = "bold 9pt Calibri";
+                            context.textAlign = "left";
+                            context.fillStyle = "#000";
+                            context.fillText(name, startX + (i * barWidth) + i + 5, chartHeight + 10, 200);
+                        }
+                        // Add some data markers to the y-axis
+                        var numMarkers = Math.ceil(maxValue / markDataIncrementsIn);
+                        context.textAlign = "right";
+                        context.fillStyle = "#000";
+                        var markerValue = 0;
+                        for (var i = 0; i < numMarkers; i++) {
+                            context.fillText((markerValue / 30), (startX - 5), (chartHeight - markerValue), 50);
+                            markerValue += markDataIncrementsIn;
+                        }
+                    }
+
+                    function drawLine(contextO, startx, starty, endx, endy) {
+                        contextO.beginPath();
+                        contextO.moveTo(startx, starty);
+                        contextO.lineTo(endx, endy);
+                        contextO.closePath();
+                        contextO.stroke();
+                    }
+
+                    // drawRectangle - draws a rectangle on a canvas context using the dimensions specified
+                    function drawRectangle(contextO, x, y, w, h, fill) {
+                        contextO.beginPath();
+                        contextO.rect(x, y, w, h);
+                        contextO.closePath();
+                        contextO.stroke();
+                        if (fill) contextO.fill();
+                    }
+
                 }
-            else
-                {
-                context.fillStyle = "#00aeef";
-                mode = 0;
-                }
-            
-            drawRectangle(context,startX + (i * barWidth) + i,(chartHeight - height),barWidth,height,true);
-
-            // Add the column title to the x-axis
-             if(face-1 != i)
-                context.font = "8pt Calibri";
-            else
-                context.font = "bold 9pt Calibri";
-            context.textAlign = "left";
-            context.fillStyle = "#000";
-            context.fillText(name, startX + (i * barWidth) + i + 5, chartHeight + 10, 200);		
-          }
-          // Add some data markers to the y-axis
-          var numMarkers = Math.ceil(maxValue / markDataIncrementsIn);
-          context.textAlign = "right";
-          context.fillStyle = "#000";
-          var markerValue = 0;
-          for (var i=0; i < numMarkers; i++) {		
-            context.fillText((markerValue/30), (startX - 5), (chartHeight - markerValue), 50);
-            markerValue += markDataIncrementsIn;
-          }
+            };
+            request.open('GET', 'http://<<ipAddress>>:1337/data', true);
+            request.send();
         }
-            
-        function drawLine(contextO, startx, starty, endx, endy) {
-          contextO.beginPath();
-          contextO.moveTo(startx, starty);
-          contextO.lineTo(endx, endy);
-          contextO.closePath();
-          contextO.stroke();
-        }
-
-        // drawRectangle - draws a rectangle on a canvas context using the dimensions specified
-        function drawRectangle(contextO, x, y, w, h, fill) {			
-          contextO.beginPath();
-          contextO.rect(x, y, w, h);
-          contextO.closePath();
-          contextO.stroke();
-          if (fill) contextO.fill();
-        }
-           
-        }
-        };
-        request.open('GET', 'http://<<ipAddress>>:1337/data', true);
-        request.send();
-        }
-     
-     
- </script>
+    </script>
 </body>
