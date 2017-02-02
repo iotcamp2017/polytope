@@ -58,10 +58,12 @@ INTERFACE.data = {}; //этот объект будет передаваться
 INTERFACE.data.status = 'Default status'; 
 var timeWeek = {};
 var timeDay = {};
-var weekNames = [];
-var dayNames = [];
+var weekNames = ['Social networks', 'Eating', 'Social interaction', 'Rest',
+     'Studying', 'Work', 'Housekeeping*', 'Planning', 'E-mail', 'Phone call', 'Sports', 'Walk'];
+var dayNames = ['Social networks', 'Eating', 'Social interaction', 'Rest',
+     'Studying', 'Work', 'Housekeeping*', 'Planning', 'E-mail', 'Phone call', 'Sports', 'Walk'];
 
-var upperLimit = {};
+var upperLimit = {'Social networks' : checkInterval * 3600};
 var lowerLimit = {};
 
 INTERFACE.data.graphDay = {};
@@ -86,7 +88,16 @@ INTERFACE.init = function(noble){ //this function contains all the main function
 
     //initialize
     setInterval(periodCheck, checkInterval);
-
+    for (var i = 0; i < weekNames.length; i++) {
+        if (!timeWeek(weekNames[i])) {
+            timeWeek[weekNames[i]] = 0;
+        }
+    }
+    for (var i = 0; i < dayNames.length; i++) {
+        if (!timeDay(dayNames[i])) {
+            timeDay[dayNames[i]] = 0;
+        }
+    }
 
     //BLE onDiscover should be described over here
     noble.on('discover', function(peripheral) {
