@@ -4,10 +4,14 @@ var INTERFACE = {}; //тут мы будет описывать всё, что �
 var API_UUID = API.registerInfrastructure('Polytope', {}); // регаемся в нашей API-библиотеке и получаем уникальный ID, 
                                                                  // с которым мы потом всё время к ней обращаемся
 
+
+REMINDER_MULTIPLIER = 5;
+
 checkInterval = 1000;
+var startDayTime;
 
 
-//TODO: add suffixes
+
 var UUID_PREFIX = '0000';
 var UUID_SUFFIX = '00001000800000805f9b34fb';
 var SERVICE1_UUID = UUID_PREFIX + "0F00" + UUID_SUFFIX;
@@ -60,7 +64,7 @@ var timeWeek = {};
 var timeDay = {};
 var weekNames = ['Social networks', 'Eating', 'Social interaction', 'Rest',
      'Studying', 'Work', 'Housekeeping*', 'Planning', 'E-mail', 'Phone call', 'Sports', 'Walk'];
-var dayNames = ['Social networks', 'Eating', 'Social interaction', 'Rest',
+var dayNames = ['Social networks', 'Eating', 'Rest',
      'Studying', 'Work', 'Housekeeping*', 'Planning', 'E-mail', 'Phone call', 'Sports', 'Walk'];
 
 var upperLimit = {'Social networks' : checkInterval * 3600};
@@ -98,6 +102,7 @@ INTERFACE.init = function(noble){ //this function contains all the main function
             timeDay[dayNames[i]] = 0;
         }
     }
+    startDayTime = (new Date()).getTime();
 
     //BLE onDiscover should be described over here
     noble.on('discover', function(peripheral) {
@@ -131,38 +136,7 @@ INTERFACE.init = function(noble){ //this function contains all the main function
                                 BuzzerChar = characteristic;
                             }
                         });
-                        /*
-                        characteristic.on('read', function (data, isNotification) {
-                            INTERFACE.data.status = 'только что прочитали инфу';
-                            
-                            //logging to console
-                            console.log('[BLE] some integer captured: ', data.readUInt8(0));
-
-                            INTERFACE.data.someOutput = data.readUInt8(0);
-                            
-                            //redraw user interface
-                            API.onInfrastructureUpdateInfo(API_UUID, INTERFACE.data); //дання функция обрабатывает одновление стандартного поля типа INTERFACE.data.status
-                                                                                      //без полной перерисовки (в отличие от функции API.onInfrastructureRedrawPalette, которая выполняет ПОЛНУЮ перерисовку всей информации в формате html, расположенной ПОД стандартными полями) 
-                            
-                            API.onInfrastructureRedrawPalette(API_UUID); // говорим API, что блок нужно перерисовать у пользователя
-
-                            //if('emitSocket' in INTERFACE && typeof INTERFACE.emitSocket == 'function') //ЕСЛИ эта функция уже была инициализирована, то вызываем её
-                            INTERFACE.emitSocket.call('client update html', INTERFACE.data);
-                        });
                         
-                        // true to enable notify
-                        characteristic.notify(true, function (error) {
-                            console.log('[BLE] some notification is on');
-                            INTERFACE.data.status = 'подключились к genuino';
-
-                            API.onInfrastructureUpdateInfo(API_UUID, INTERFACE.data);
-                            
-                            API.onInfrastructureRedrawPalette(API_UUID); // говорим API, что блок нужно перерисовать у пользователя
-
-                            //if('emitSocket' in INTERFACE && typeof INTERFACE.emitSocket == 'function')
-                            INTERFACE.emitSocket.call('client update html', INTERFACE.data);
-                        });
-                        */
                     });
                 });
             });
@@ -214,6 +188,16 @@ changeSideName = function(side, name) {
 
 periodCheck = function() {
     console.log('periodCheck called');
+    var time = (new Date()).getTime();
+    if (time - startDayTime >= 24 * 3600 * 1000) {
+        currentTasks.forEach(function(task) {
+            timeDay[task] = 0;
+        });
+        while (time - startDayTime >= 24 * 3600 * 1000) {
+            startDayTime += 24 * 3600 * 1000;
+        };
+        
+    }
     if (isActive && currSide <= 10) {
         var name = currentTasks[currSide];
         //TODO: add real time addition
@@ -222,7 +206,12 @@ periodCheck = function() {
         if (upperLimit.hasOwnProperty(name) && upperLimit[name] >= timeDay[name]) {
             sendWarning(currSide);
         } 
-        //TODO: add lowerLimit check
+        for (var i = 0; i <= 10; i++) {
+            if (i != currSide && lowerLimit.hasOwnProperty(i) && (24 * 3600 * 1000 - time) <= lowerLimit[i]* REMINDER_MULTIPLIER) {
+                sendWarning(i);
+                break;
+            }
+        }
     }
     currentTasks.forEach(function(task) {
         INTERFACE.data.graphDay[task] = timeDay[task];
