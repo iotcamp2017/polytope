@@ -10,7 +10,7 @@ REMINDER_MULTIPLIER = 5;
 checkInterval = 1000;
 var startDayTime;
 
-
+alerted = [false, false, false, false, false, false, false, false, false, false]
 
 var UUID_PREFIX = '0000';
 var UUID_SUFFIX = '00001000800000805f9b34fb';
@@ -44,8 +44,10 @@ var readCallbacks = {CHAR11_UUID : currSideCB, CHAR12_UUID : isActiveCB};
 var DiodeChar;
 var BuzzerChar;
 
-var Tasks = [];
-var currentTasks = [];
+var Tasks = ['Social networks', 'Eating', 'Social interaction', 'Rest',
+     'Studying', 'Work', 'Housekeeping*', 'Planning', 'E-mail', 'Phone call', 'Sports', 'Walk', 'Guitar'];
+var currentTasks = ['Social networks', 'Eating', 'Rest',
+     'Studying', 'Work', 'Housekeeping*', 'Planning', 'E-mail', 'Phone call', 'Sports', 'Walk'];
 
 var currSide = 12;
 var isActive = false;
@@ -63,15 +65,15 @@ INTERFACE.data.status = 'Default status';
 var timeWeek = {};
 var timeDay = {};
 var weekNames = ['Social networks', 'Eating', 'Social interaction', 'Rest',
-     'Studying', 'Work', 'Housekeeping*', 'Planning', 'E-mail', 'Phone call', 'Sports', 'Walk'];
+     'Studying', 'Work', 'Housekeeping*', 'Planning', 'E-mail', 'Phone call', 'Sports', 'Walk', 'Guitar'];
 var dayNames = ['Social networks', 'Eating', 'Rest',
      'Studying', 'Work', 'Housekeeping*', 'Planning', 'E-mail', 'Phone call', 'Sports', 'Walk'];
 
-var upperLimit = {'Social networks' : checkInterval * 3600};
+var upperLimit = {'Social networks' : checkInterval * 5};
 var lowerLimit = {};
 
 INTERFACE.data.graphDay = {};
-INTERFACE.data.graphWeek = {};
+INTERFACE.data.graphWeek = {"Guitar" : checkInterval * 15 * 60};
 
 API.registerDrawHTMLCallback(API_UUID, function(){ // функция, отвечающая за отрисовку html-кода в блок на странице
 
@@ -93,12 +95,12 @@ INTERFACE.init = function(noble){ //this function contains all the main function
     //initialize
     setInterval(periodCheck, checkInterval);
     for (var i = 0; i < weekNames.length; i++) {
-        if (!timeWeek(weekNames[i])) {
+        if (!timeWeek.hasOwnProperty(weekNames[i])) {
             timeWeek[weekNames[i]] = 0;
         }
     }
     for (var i = 0; i < dayNames.length; i++) {
-        if (!timeDay(dayNames[i])) {
+        if (!timeDay.hasOwnProperty(dayNames[i])) {
             timeDay[dayNames[i]] = 0;
         }
     }
@@ -183,6 +185,7 @@ changeSideName = function(side, name) {
         Tasks.push(name);
     }
     currentTasks[side] = name;
+    alerted[side] = false;
     return true;
 };
 
@@ -196,18 +199,22 @@ periodCheck = function() {
         while (time - startDayTime >= 24 * 3600 * 1000) {
             startDayTime += 24 * 3600 * 1000;
         };
-        
+        for (var i = 0; i <= 10; i++) {
+           alerted[i] = false;
+        }
     }
     if (isActive && currSide <= 10) {
         var name = currentTasks[currSide];
         //TODO: add real time addition
         timeDay[name] += checkInterval;
         timeWeek[name] += checkInterval;
-        if (upperLimit.hasOwnProperty(name) && upperLimit[name] >= timeDay[name]) {
+        if (upperLimit.hasOwnProperty(name) && upperLimit[name] >= timeDay[name] && !alerted[currSide]) {
+            alerted[currSide] = true;
             sendWarning(currSide);
         } 
         for (var i = 0; i <= 10; i++) {
-            if (i != currSide && lowerLimit.hasOwnProperty(i) && (24 * 3600 * 1000 - time) <= lowerLimit[i]* REMINDER_MULTIPLIER) {
+            if (i != currSide && lowerLimit.hasOwnProperty(i) && !alerted[i] && (24 * 3600 * 1000 - time) <= lowerLimit[i]* REMINDER_MULTIPLIER) {
+                alerted[i] = true;
                 sendWarning(i);
                 break;
             }
