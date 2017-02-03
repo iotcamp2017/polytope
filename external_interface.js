@@ -17,7 +17,7 @@ var UUID_SUFFIX = '00001000800000805f9b34fb';
 var SERVICE1_UUID = UUID_PREFIX + "0F00" + UUID_SUFFIX;
 var SERVICE2_UUID = UUID_PREFIX + "0F10" + UUID_SUFFIX;
 var SERVICE3_UUID = UUID_PREFIX + "0F20" + UUID_SUFFIX;
-INTERFACE.serviceUUID = [SERVICE1_UUID, SERVICE2_UUID, SERVICE3_UUID];
+INTERFACE.serviceUUID = ["0F00", SERVICE1_UUID, SERVICE2_UUID, SERVICE3_UUID];
 INTERFACE.charUUID = {
     SERVICE1_UUID : [(UUID_PREFIX + "0F01" + UUID_SUFFIX), (UUID_PREFIX + "0F02" + UUID_SUFFIX)],
      SERVICE2_UUID : [(UUID_PREFIX + "0F11" + UUID_SUFFIX)],
@@ -109,7 +109,7 @@ INTERFACE.init = function(noble){ //this function contains all the main function
     //BLE onDiscover should be described over here
     noble.on('discover', function(peripheral) {
        // noble.stopScanning();
-        
+        console.log("peripheral discovered");
         peripheral.connect(function(error) {
             console.log('connected to peripheral: ' + peripheral.uuid);
             peripheral.discoverServices(INTERFACE.serviceUUID, function(error, services) {
