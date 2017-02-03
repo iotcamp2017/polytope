@@ -11,6 +11,7 @@
 #define TIME_STEP_MILLIS 100
 #define ALPHA 0.1
 #define BRIGHTNESS 255
+#define SWITCH_OFF_SIDE 11
 
 /*
 BLEService plotterService("13333333333333333333333333333331");
@@ -45,6 +46,8 @@ void buzzerWritten(BLECentral& central, BLECharacteristic& characteristic);
 void diodeModeWritten(BLECentral& central, BLECharacteristic& characteristic);
 int isStaticPosition(int mode, const float d);
 int isShake();
+void switchOnNotification();
+void switchOffNotification();
 
 const byte diod_default_state[] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
 int diodePin[] = {A0, A1, A2, A3, A4, A5, 2, 3, 4, 5, 6, 7};
@@ -63,7 +66,7 @@ float mean = 0;
 bool buzzerOn = false;
 bool synTime = true;
 
-float normx[] = {
+float normz[] = {
 0, 0,
 0.27639320225002095, -0.27639320225002095, 
 -0.7236067977499792, 0.7236067977499792, 
@@ -81,7 +84,7 @@ float normy[] = {
 0, 0
 };
 
-float normz[] = {
+float normx[] = {
 1, -1,
 0.4472135954999579, -0.4472135954999579, 
 0.4472135954999579, -0.4472135954999579, 
@@ -127,25 +130,27 @@ void setup() {
   DiodeModeChar.setEventHandler(BLEWritten, diodeModeWritten);
 
   setupPins();
-  /*blePeripheral.begin();
+  blePeripheral.begin();
   Serial.println("Bluetooth activated.");
-  Serial.begin(9600);
+  /*Serial.begin(9600);
   CurieIMU.begin();
   CurieIMU.setAccelerometerRange(1);
   CurieIMU.setGyroRange(10);
-  blePeripheral.setLocalName("PlotterCoordSketch");
+  //blePeripheral.setLocalName("PlotterCoordSketch");
   blePeripheral.setAdvertisedServiceUuid(plotterService.uuid());
   blePeripheral.addAttribute(plotterService);
   blePeripheral.addAttribute(CoordChar);
   blePeripheral.addAttribute(BuzzerChar);
   blePeripheral.begin();
   Serial.println("Bluetooth ACTIVATE!");
-  setupPins();*/
+  */
+  setupPins();
 }
 
 void loop() {
   BLECentral central = blePeripheral.central();
-  synTime = true;
+  synTime = false;// true;
+  Serial.println("Loop iteration.");
   if(central) {
     if(synTime) {
       // Запрашиваем время.
@@ -161,27 +166,35 @@ void loop() {
     Serial.println(central.address());
     digitalWrite(13,HIGH); 
     
+    switchOnNotification();
+    delay(1000);
+    switchOffNotification();
+
     while(central.connected())
     {
       blePeripheral.poll();
       long currentMillis = millis();
 
       if(currentMillis - previousMillis > 800) {
+        //switchOnNotification();
         if(isStaticPosition(1, 3));
             updateSide();
         previousMillis = currentMillis;
+        //delay(1000);
+        //switchOffNotification();
       }
 
       if(isShake()){
         Serial.println("IT SHAKES!");
         BuzzerChar.setValue(false);
         
-        /*byte* default_state = new byte[12];
+        byte* default_state = new byte[12];
         for (int i=0; i < 12; i++) default_state[i] = 0;
-        const byte * const_default_state = default_state;*/
+        const byte * const_default_state = default_state;
 //        for (int i=0; i < 12; i++) DiodeModeChar.setValue(&(diod_default_state[0]), 12);
-        //buzzerWritten();
-        //diodeModeWritten();
+        DiodeModeChar.setValue(&(diod_default_state[0]), 12);
+        buzzerWritten();
+        diodeModeWritten();
       }
     }
     
@@ -424,3 +437,22 @@ void diodeModeWritten(BLECentral& central, BLECharacteristic& characteristic) {
   diodeModeWritten();
 }
 
+void switchOnNotification() {
+  for (int i = 0; i < 12; i++) {
+    state[i] = true;
+  }
+  BuzzerChar.setValue(1);
+  diodeModeWritten();
+  buzzerWritten();
+}
+
+void switchOffNotification() {
+  byte* default_state = new byte[12];
+  for (int i=0; i < 12; i++) default_state[i] = 0;
+  const byte * const_default_state = default_state;
+//        for (int i=0; i < 12; i++) DiodeModeChar.setValue(&(diod_default_state[0]), 12);
+    DiodeModeChar.setValue(&(diod_default_state[0]), 12);
+  BuzzerChar.setValue(0);
+  diodeModeWritten();
+  buzzerWritten();
+}
